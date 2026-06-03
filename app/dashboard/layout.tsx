@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex items-center gap-8">
             <Link href="/dashboard" className="text-xl font-extrabold tracking-tighter flex items-center gap-2">
               <Package className="h-6 w-6 text-blue-600" />
-              <span>Aasa<span className="text-blue-600">Portal</span></span>
+              <span>Aasa<span className="text-blue-600">MedChem</span></span>
             </Link>
             <nav className="hidden md:flex gap-1">
               <Link 

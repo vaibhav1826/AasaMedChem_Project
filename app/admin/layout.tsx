@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex items-center gap-8">
             <Link href="/admin" className="text-xl font-extrabold tracking-tighter flex items-center gap-2">
               <ShieldCheck className="h-6 w-6 text-emerald-500" />
-              <span>Admin<span className="text-emerald-500">Portal</span></span>
+              <span>AasaMedChem <span className="text-emerald-500">Admin</span></span>
             </Link>
             <nav className="hidden md:flex gap-2">
               <Link 

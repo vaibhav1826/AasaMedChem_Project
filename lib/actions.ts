@@ -1,11 +1,36 @@
 "use server";
 
 import { db } from "./db";
-import { products, orders, orderItems } from "./db/schema";
+import { products, orders, orderItems, users } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { toBase, calcLineTotal } from "./units";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
+import bcrypt from "bcrypt";
+
+export async function registerUser(formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  if (!email || !password) {
+    throw new Error("Missing email or password");
+  }
+
+  const existing = await db.select().from(users).where(eq(users.email, email));
+  if (existing.length > 0) {
+    throw new Error("User already exists");
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  await db.insert(users).values({
+    email,
+    passwordHash,
+    role: "seller", // defaults to seller
+  });
+
+  return { success: true };
+}
 
 export async function getProducts() {
   return db.select().from(products);

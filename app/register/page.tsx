@@ -1,6 +1,5 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,31 +8,35 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import Link from "next/link";
 import { Package } from "lucide-react";
+import { registerUser } from "@/lib/actions";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    const formData = new FormData(e.currentTarget);
+    const password = formData.get("password") as string;
+    const confirm = formData.get("confirmPassword") as string;
 
-    if (res?.error) {
-      setError("Invalid email or password");
+    if (password !== confirm) {
+      setError("Passwords do not match");
       setLoading(false);
-    } else {
-      router.push("/dashboard");
-      router.refresh();
+      return;
+    }
+
+    try {
+      await registerUser(formData);
+      // Automatically redirect to login after successful registration
+      router.push("/login?registered=true");
+    } catch (err: any) {
+      setError(err.message || "Failed to register account");
+      setLoading(false);
     }
   };
 
@@ -47,40 +50,32 @@ export default function LoginPage() {
         
         <Card className="w-full">
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>Enter your credentials to access your wholesale account.</CardDescription>
+            <CardTitle>Create an Account</CardTitle>
+            <CardDescription>Sign up to access wholesale pricing and ordering.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  required 
-                />
+                <Label htmlFor="email">Email Address</Label>
+                <Input id="email" name="email" type="email" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  required 
-                />
+                <Input id="password" name="password" type="password" required minLength={6} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input id="confirmPassword" name="confirmPassword" type="password" required minLength={6} />
               </div>
               {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Signing in..." : "Sign In"}
+                {loading ? "Creating account..." : "Register"}
               </Button>
             </form>
           </CardContent>
           <CardFooter className="flex justify-center border-t pt-4">
             <p className="text-sm text-muted-foreground">
-              Don't have an account? <Link href="/register" className="text-blue-600 font-medium hover:underline">Register here</Link>
+              Already have an account? <Link href="/login" className="text-blue-600 font-medium hover:underline">Sign in</Link>
             </p>
           </CardFooter>
         </Card>
