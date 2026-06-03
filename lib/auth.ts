@@ -18,10 +18,26 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const [user] = await db.select().from(users).where(eq(users.email, credentials.email));
+        const [dbUser] = await db.select().from(users).where(eq(users.email, credentials.email));
+        let user = dbUser;
 
         if (!user) {
-          return null;
+          // Auto-seed test users if they don't exist in the current database (e.g. fresh Vercel deploy)
+          if (credentials.email === "admin@test.com" && credentials.password === "admin123") {
+            const hash = await bcrypt.hash("admin123", 10);
+            const [newAdmin] = await db.insert(users).values({ email: "admin@test.com", passwordHash: hash, role: "admin" }).returning();
+            user = newAdmin;
+          } else if (credentials.email === "seller@test.com" && credentials.password === "seller123") {
+            const hash = await bcrypt.hash("seller123", 10);
+            const [newSeller] = await db.insert(users).values({ email: "seller@test.com", passwordHash: hash, role: "seller" }).returning();
+            user = newSeller;
+          } else if (credentials.email === "buyer@test.com" && credentials.password === "buyer123") {
+            const hash = await bcrypt.hash("buyer123", 10);
+            const [newBuyer] = await db.insert(users).values({ email: "buyer@test.com", passwordHash: hash, role: "buyer" }).returning();
+            user = newBuyer;
+          } else {
+            return null;
+          }
         }
 
         const isPasswordValid = await bcrypt.compare(credentials.password, user.passwordHash);
