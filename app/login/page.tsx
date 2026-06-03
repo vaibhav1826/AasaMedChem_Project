@@ -32,22 +32,7 @@ export default function LoginPage() {
       if (res?.error) {
         setError("Invalid credentials");
       } else {
-        // We need to fetch the session to know the role, or we can just let middleware route us correctly.
-        // The prompt says: "if role === 'seller' redirect to /dashboard/seller, if role === 'buyer' redirect to /dashboard/buyer"
-        // But the middleware already handles redirecting the root `/` to the correct dashboard if authenticated.
-        // So we can simply redirect to `/` and let middleware do its job, or we can hit `/api/auth/session` to get the role.
-        // Let's fetch session to be explicit as requested.
-        const sessionRes = await fetch("/api/auth/session");
-        const sessionData = await sessionRes.json();
-        
-        if (sessionData?.user?.role === "seller") {
-          router.push("/dashboard/seller");
-        } else if (sessionData?.user?.role === "buyer") {
-          router.push("/dashboard/buyer");
-        } else {
-          // Fallback
-          router.push("/");
-        }
+        window.location.href = "/";
       }
     } catch (err) {
       setError("An unexpected error occurred");
