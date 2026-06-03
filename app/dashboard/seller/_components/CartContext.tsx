@@ -90,6 +90,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const submitOrder = async () => {
     if (items.length === 0) return;
+
+    const overStock = items.find((i) => i.baseQuantity > i.stockQuantity);
+    if (overStock) {
+      alert(
+        `Insufficient stock for ${overStock.productName}. Only ${overStock.stockQuantity} ${overStock.baseUnit} available.`
+      );
+      return;
+    }
+
+    const invalidQty = items.find((i) => !i.orderedQuantity || i.orderedQuantity <= 0);
+    if (invalidQty) {
+      alert(`Enter a valid quantity for ${invalidQty.productName}.`);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await placeOrder(items);

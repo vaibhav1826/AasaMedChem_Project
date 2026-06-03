@@ -15,23 +15,21 @@ export function CartDrawer() {
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline" className="relative gap-2 border-zinc-200 dark:border-zinc-800">
-          <ShoppingCart className="h-4 w-4" />
-          <span className="hidden sm:inline">Quote List</span>
-          {items.length > 0 && (
-            <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center">
-              {items.length}
-            </span>
-          )}
-        </Button>
+      <SheetTrigger render={<Button variant="outline" className="relative gap-2 border-zinc-200 dark:border-zinc-800" />}>
+        <ShoppingCart className="h-4 w-4" />
+        <span className="hidden sm:inline">Order Cart</span>
+        {items.length > 0 && (
+          <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center">
+            {items.length}
+          </span>
+        )}
       </SheetTrigger>
       
       <SheetContent className="w-full sm:max-w-lg flex flex-col bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800">
         <SheetHeader className="pb-4 border-b border-zinc-100 dark:border-zinc-900">
-          <SheetTitle>Your Quote List</SheetTitle>
+          <SheetTitle>Your Order Cart</SheetTitle>
           <SheetDescription>
-            Adjust quantities and units below. Live pricing is shown for each item.
+            Adjust quantities and units below. Prices update live as you change units (g/kg, mL/L, or count).
           </SheetDescription>
         </SheetHeader>
         
@@ -39,7 +37,7 @@ export function CartDrawer() {
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-zinc-500 space-y-2">
               <ShoppingCart className="h-12 w-12 text-zinc-300 dark:text-zinc-700" />
-              <p>Your quote list is empty.</p>
+              <p>Your cart is empty.</p>
             </div>
           ) : (
             items.map((item) => (
@@ -58,7 +56,7 @@ export function CartDrawer() {
             onClick={submitOrder} 
             disabled={items.length === 0 || isSubmitting}
           >
-            {isSubmitting ? "Placing Order..." : "Submit Quote Request"}
+            {isSubmitting ? "Placing Order..." : "Place Order"}
           </Button>
         </SheetFooter>
       </SheetContent>

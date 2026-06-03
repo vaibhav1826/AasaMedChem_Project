@@ -64,7 +64,11 @@ export default async function AdminOrdersPage() {
                     <Badge className={badgeColor}>{order.status.toUpperCase()}</Badge>
                   </TableCell>
                   <TableCell className="text-right font-medium">
-                    {formatINR(order.totalInr)}
+                    {order.buyerRole === "buyer" &&
+                    order.status === "pending" &&
+                    parseFloat(order.totalInr || "0") === 0
+                      ? "TBD"
+                      : formatINR(order.totalInr)}
                   </TableCell>
                 </TableRow>
               );

@@ -67,6 +67,19 @@ export default function RegisterPage() {
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input id="confirmPassword" name="confirmPassword" type="password" required minLength={6} />
               </div>
+              <div className="space-y-2">
+                <Label>Account Type</Label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer border rounded p-3 flex-1 justify-center hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                    <input type="radio" name="role" value="buyer" defaultChecked className="accent-blue-600" />
+                    <span className="text-sm font-medium">Buyer</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer border rounded p-3 flex-1 justify-center hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                    <input type="radio" name="role" value="seller" className="accent-blue-600" />
+                    <span className="text-sm font-medium">Seller</span>
+                  </label>
+                </div>
+              </div>
               {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Creating account..." : "Register"}

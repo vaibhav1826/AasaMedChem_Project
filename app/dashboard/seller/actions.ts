@@ -4,13 +4,25 @@ import { db } from "@/lib/db";
 import { orders, orderItems, products } from "@/lib/db/schema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { toBaseQuantity, calcLineTotal } from "@/lib/units";
-import { redirect } from "next/navigation";
+import {
+  toBaseQuantity,
+  calcLineTotal,
+  assertUnitCompatible,
+  assertPositiveQuantity,
+} from "@/lib/units";
 import { eq, sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
-export async function placeOrder(items: any[]) {
+type CartLineInput = {
+  productId: string;
+  productName?: string;
+  orderedQuantity: number;
+  orderedUnit: string;
+};
+
+export async function placeOrder(items: CartLineInput[]) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session || session.user?.role !== "seller") {
     throw new Error("Unauthorized");
   }
@@ -19,68 +31,82 @@ export async function placeOrder(items: any[]) {
     throw new Error("Cart is empty");
   }
 
-  // Use a transaction to ensure atomicity
-  await db.transaction(async (tx) => {
-    let totalInr = 0;
-    
-    // We will build the validated items array
-    const validatedItems = [];
+  let totalInr = 0;
+  const validatedItems: {
+    productId: string;
+    orderedQuantity: string;
+    orderedUnit: string;
+    baseQuantity: string;
+    pricePerBaseUnitSnapshot: string;
+    lineTotalInr: string;
+  }[] = [];
 
-    for (const item of items) {
-      // Fetch fresh product data from DB
-      const [productRecord] = await tx.select().from(products).where(eq(products.id, item.productId));
-      if (!productRecord) {
-        throw new Error(`Product ${item.productName} not found in database.`);
-      }
+  // Validate everything before writing (Neon HTTP driver has no transactions)
+  for (const item of items) {
+    const [productRecord] = await db
+      .select()
+      .from(products)
+      .where(eq(products.id, item.productId));
 
-      // Calculate base quantity from client's requested quantity/unit
-      const baseQty = toBaseQuantity(item.orderedQuantity, item.orderedUnit);
-      
-      // Trust ONLY the database price
-      const priceSnapshot = parseFloat(productRecord.pricePerBaseUnit);
-      
-      // Calculate strict line total
-      const lineTotalInr = calcLineTotal(baseQty, priceSnapshot);
-      
-      totalInr += lineTotalInr;
-
-      validatedItems.push({
-        productId: productRecord.id,
-        orderedQuantity: item.orderedQuantity.toString(),
-        orderedUnit: item.orderedUnit,
-        baseQuantity: baseQty.toString(),
-        pricePerBaseUnitSnapshot: priceSnapshot.toString(),
-        lineTotalInr: lineTotalInr.toString()
-      });
-
-      // Optional: Strict stock checking (business rule: allow backorders or enforce limit?)
-      // We will just subtract and let it go negative if backordered, or we can enforce here:
-      // if (parseFloat(productRecord.stockQuantity) < baseQty) throw new Error("Insufficient stock");
-
-      await tx
-        .update(products)
-        .set({
-          stockQuantity: sql`${products.stockQuantity} - ${baseQty}`
-        })
-        .where(eq(products.id, productRecord.id));
+    if (!productRecord) {
+      throw new Error(
+        `Product ${item.productName ?? item.productId} not found in database.`
+      );
     }
 
-    // Insert order
-    const [insertedOrder] = await tx
-      .insert(orders)
-      .values({
-        userId: session.user.id,
-        status: "pending",
-        totalInr: totalInr.toString(),
+    assertPositiveQuantity(item.orderedQuantity);
+    assertUnitCompatible(item.orderedUnit, productRecord.baseUnit);
+
+    const baseQty = toBaseQuantity(item.orderedQuantity, item.orderedUnit);
+    const stock = parseFloat(productRecord.stockQuantity);
+
+    if (baseQty > stock) {
+      throw new Error(
+        `Insufficient stock for ${productRecord.name}. Available: ${stock} ${productRecord.baseUnit}`
+      );
+    }
+
+    const priceSnapshot = parseFloat(productRecord.pricePerBaseUnit);
+    const lineTotalInr = calcLineTotal(baseQty, priceSnapshot);
+    totalInr += lineTotalInr;
+
+    validatedItems.push({
+      productId: productRecord.id,
+      orderedQuantity: item.orderedQuantity.toString(),
+      orderedUnit: item.orderedUnit,
+      baseQuantity: baseQty.toString(),
+      pricePerBaseUnitSnapshot: priceSnapshot.toString(),
+      lineTotalInr: lineTotalInr.toString(),
+    });
+  }
+
+  const [insertedOrder] = await db
+    .insert(orders)
+    .values({
+      userId: session.user.id,
+      status: "pending",
+      totalInr: totalInr.toString(),
+    })
+    .returning();
+
+  for (const vItem of validatedItems) {
+    await db.insert(orderItems).values({
+      orderId: insertedOrder.id,
+      ...vItem,
+    });
+
+    await db
+      .update(products)
+      .set({
+        stockQuantity: sql`${products.stockQuantity} - ${vItem.baseQuantity}`,
       })
-      .returning();
+      .where(eq(products.id, vItem.productId));
+  }
 
-    // Insert order items
-    for (const vItem of validatedItems) {
-      await tx.insert(orderItems).values({
-        orderId: insertedOrder.id,
-        ...vItem
-      });
-    }
-  });
+  revalidatePath("/dashboard/seller");
+  revalidatePath("/dashboard/seller/orders");
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin");
+
+  return { orderId: insertedOrder.id };
 }

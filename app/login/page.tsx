@@ -114,8 +114,14 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="text-center">
-          <Link href="/admin/login" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 font-medium transition-colors">
+        <div className="text-center space-y-2">
+          <p className="text-sm text-zinc-500">
+            New seller account?{" "}
+            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400">
+              Register here
+            </Link>
+          </p>
+          <Link href="/admin/login" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 font-medium transition-colors block">
             Admin? Login here
           </Link>
         </div>

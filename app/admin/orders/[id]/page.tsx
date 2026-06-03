@@ -72,7 +72,13 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
           </div>
           <div className="flex flex-col items-end gap-3">
             <Badge className={badgeColor + " text-sm px-3 py-1"}>{order.status.toUpperCase()}</Badge>
-            <UpdateStatusButton id={order.id} currentStatus={order.status} />
+            <UpdateStatusButton
+              id={order.id}
+              currentStatus={order.status}
+              isBuyerQuotationPending={
+                order.buyerRole === "buyer" && order.status === "pending"
+              }
+            />
           </div>
         </CardHeader>
         <CardContent>

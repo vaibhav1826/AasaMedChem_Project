@@ -1,10 +1,14 @@
 import type { NextConfig } from "next";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
-  devIndicators: {
-    appIsrStatus: false,
-    buildActivity: false,
-  }
+  turbopack: {
+    root: projectRoot,
+  },
+  serverExternalPackages: ["bcrypt"],
 };
 
 export default nextConfig;

@@ -25,3 +25,18 @@ export function fromBaseQuantity(baseQty: number, targetUnit: string): number {
 export function calcLineTotal(baseQty: number, pricePerBase: number): number {
   return baseQty * pricePerBase
 }
+
+export function assertUnitCompatible(orderedUnit: string, baseUnit: string): void {
+  const allowed = UNITS_FOR_BASE_UNIT[baseUnit]
+  if (!allowed?.includes(orderedUnit)) {
+    throw new Error(
+      `Unit "${orderedUnit}" is not valid for a product stored in ${baseUnit}. Allowed: ${allowed?.join(", ") ?? orderedUnit}`
+    )
+  }
+}
+
+export function assertPositiveQuantity(quantity: number): void {
+  if (!Number.isFinite(quantity) || quantity <= 0) {
+    throw new Error("Quantity must be a positive number")
+  }
+}

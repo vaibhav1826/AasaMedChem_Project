@@ -4,12 +4,24 @@ import { db } from "@/lib/db";
 import { orders, orderItems, products } from "@/lib/db/schema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { toBaseQuantity } from "@/lib/units";
+import {
+  toBaseQuantity,
+  assertUnitCompatible,
+  assertPositiveQuantity,
+} from "@/lib/units";
 import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
-export async function requestQuotation(items: any[]) {
+type QuotationLineInput = {
+  productId: string;
+  productName?: string;
+  orderedQuantity: number;
+  orderedUnit: string;
+};
+
+export async function requestQuotation(items: QuotationLineInput[]) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session || session.user?.role !== "buyer") {
     throw new Error("Unauthorized");
   }
@@ -18,44 +30,61 @@ export async function requestQuotation(items: any[]) {
     throw new Error("Quotation request is empty");
   }
 
-  await db.transaction(async (tx) => {
-    const validatedItems = [];
+  const validatedItems: {
+    productId: string;
+    orderedQuantity: string;
+    orderedUnit: string;
+    baseQuantity: string;
+    pricePerBaseUnitSnapshot: string;
+    lineTotalInr: string;
+  }[] = [];
 
-    for (const item of items) {
-      const [productRecord] = await tx.select().from(products).where(eq(products.id, item.productId));
-      if (!productRecord) {
-        throw new Error(`Product ${item.productName} not found in database.`);
-      }
+  for (const item of items) {
+    const [productRecord] = await db
+      .select()
+      .from(products)
+      .where(eq(products.id, item.productId));
 
-      const baseQty = toBaseQuantity(item.orderedQuantity, item.orderedUnit);
-      
-      validatedItems.push({
-        productId: productRecord.id,
-        orderedQuantity: item.orderedQuantity.toString(),
-        orderedUnit: item.orderedUnit,
-        baseQuantity: baseQty.toString(),
-        pricePerBaseUnitSnapshot: "0",
-        lineTotalInr: "0"
-      });
-      // NOTE: Stock is NOT deducted during a quotation request, as the order isn't finalized yet.
+    if (!productRecord) {
+      throw new Error(
+        `Product ${item.productName ?? item.productId} not found in database.`
+      );
     }
 
-    // Insert order with totalInr = 0, status = 'pending'
-    const [insertedOrder] = await tx
-      .insert(orders)
-      .values({
-        userId: session.user.id,
-        status: "pending",
-        totalInr: "0",
-      })
-      .returning();
+    assertPositiveQuantity(item.orderedQuantity);
+    assertUnitCompatible(item.orderedUnit, productRecord.baseUnit);
 
-    // Insert order items
-    for (const vItem of validatedItems) {
-      await tx.insert(orderItems).values({
-        orderId: insertedOrder.id,
-        ...vItem
-      });
-    }
-  });
+    const baseQty = toBaseQuantity(item.orderedQuantity, item.orderedUnit);
+
+    validatedItems.push({
+      productId: productRecord.id,
+      orderedQuantity: item.orderedQuantity.toString(),
+      orderedUnit: item.orderedUnit,
+      baseQuantity: baseQty.toString(),
+      pricePerBaseUnitSnapshot: "0",
+      lineTotalInr: "0",
+    });
+  }
+
+  const [insertedOrder] = await db
+    .insert(orders)
+    .values({
+      userId: session.user.id,
+      status: "pending",
+      totalInr: "0",
+    })
+    .returning();
+
+  for (const vItem of validatedItems) {
+    await db.insert(orderItems).values({
+      orderId: insertedOrder.id,
+      ...vItem,
+    });
+  }
+
+  revalidatePath("/dashboard/buyer");
+  revalidatePath("/dashboard/buyer/quotations");
+  revalidatePath("/admin/orders");
+
+  return { orderId: insertedOrder.id };
 }

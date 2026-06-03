@@ -73,7 +73,7 @@ export function ProductCard({ product }: { product: any }) {
       <CardFooter className="pt-0 border-t border-zinc-100 dark:border-zinc-800 mt-4 p-4">
         <Button onClick={handleAdd} className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white">
           <Plus className="h-4 w-4" />
-          Add to Quote
+          Add to Cart
         </Button>
       </CardFooter>
     </Card>

@@ -21,9 +21,16 @@ export async function createProduct(formData: FormData) {
   const sku = formData.get("sku") as string;
   const description = formData.get("description") as string;
   const category = formData.get("category") as string;
-  const baseUnit = formData.get("baseUnit") as 'g' | 'mL' | 'count';
+  const baseUnit = formData.get("baseUnit") as "g" | "mL" | "count";
   const pricePerBaseUnit = formData.get("pricePerBaseUnit") as string;
   const stockQuantity = formData.get("stockQuantity") as string;
+
+  if (!["g", "mL", "count"].includes(baseUnit)) {
+    throw new Error("Invalid base unit. Choose g, mL, or count.");
+  }
+  if (parseFloat(pricePerBaseUnit) < 0 || parseFloat(stockQuantity) < 0) {
+    throw new Error("Price and stock must be non-negative.");
+  }
 
   await db.insert(products).values({
     name,
@@ -36,7 +43,8 @@ export async function createProduct(formData: FormData) {
   });
 
   revalidatePath("/admin/products");
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/seller");
+  revalidatePath("/dashboard/buyer");
 }
 
 export async function updateProduct(id: string, formData: FormData) {
@@ -46,9 +54,16 @@ export async function updateProduct(id: string, formData: FormData) {
   const sku = formData.get("sku") as string;
   const description = formData.get("description") as string;
   const category = formData.get("category") as string;
-  const baseUnit = formData.get("baseUnit") as 'g' | 'mL' | 'count';
+  const baseUnit = formData.get("baseUnit") as "g" | "mL" | "count";
   const pricePerBaseUnit = formData.get("pricePerBaseUnit") as string;
   const stockQuantity = formData.get("stockQuantity") as string;
+
+  if (!["g", "mL", "count"].includes(baseUnit)) {
+    throw new Error("Invalid base unit. Choose g, mL, or count.");
+  }
+  if (parseFloat(pricePerBaseUnit) < 0 || parseFloat(stockQuantity) < 0) {
+    throw new Error("Price and stock must be non-negative.");
+  }
 
   await db.update(products).set({
     name,
@@ -61,12 +76,14 @@ export async function updateProduct(id: string, formData: FormData) {
   }).where(eq(products.id, id));
 
   revalidatePath("/admin/products");
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/seller");
+  revalidatePath("/dashboard/buyer");
 }
 
 export async function deleteProduct(id: string) {
   await requireAdmin();
   await db.delete(products).where(eq(products.id, id));
   revalidatePath("/admin/products");
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/seller");
+  revalidatePath("/dashboard/buyer");
 }

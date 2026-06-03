@@ -11,10 +11,13 @@ import bcrypt from "bcrypt";
 export async function registerUser(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const rawRole = formData.get("role") as string;
 
   if (!email || !password) {
     throw new Error("Missing email or password");
   }
+
+  const role = rawRole === "seller" ? "seller" : "buyer"; // secure default and validation
 
   const existing = await db.select().from(users).where(eq(users.email, email));
   if (existing.length > 0) {
@@ -26,7 +29,7 @@ export async function registerUser(formData: FormData) {
   await db.insert(users).values({
     email,
     passwordHash,
-    role: "seller", // defaults to seller
+    role,
   });
 
   return { success: true };

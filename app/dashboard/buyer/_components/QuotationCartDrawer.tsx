@@ -12,16 +12,14 @@ export function QuotationCartDrawer() {
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline" className="relative gap-2 border-zinc-200 dark:border-zinc-800">
-          <FileText className="h-4 w-4" />
-          <span className="hidden sm:inline">Quotation Request</span>
-          {items.length > 0 && (
-            <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-purple-600 text-white text-[10px] font-bold flex items-center justify-center">
-              {items.length}
-            </span>
-          )}
-        </Button>
+      <SheetTrigger render={<Button variant="outline" className="relative gap-2 border-zinc-200 dark:border-zinc-800" />}>
+        <FileText className="h-4 w-4" />
+        <span className="hidden sm:inline">Quotation Request</span>
+        {items.length > 0 && (
+          <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-purple-600 text-white text-[10px] font-bold flex items-center justify-center">
+            {items.length}
+          </span>
+        )}
       </SheetTrigger>
       
       <SheetContent className="w-full sm:max-w-lg flex flex-col bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800">
