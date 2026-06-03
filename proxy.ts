@@ -6,6 +6,7 @@ export default async function proxy(req: NextRequest) {
   const token = await getToken({ 
     req, 
     secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development-32-chars-long",
+    secureCookie: process.env.NODE_ENV === "production",
   });
 
   const isAuth = !!token;
