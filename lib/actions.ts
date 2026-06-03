@@ -3,7 +3,7 @@
 import { db } from "./db";
 import { products, orders, orderItems, users } from "./db/schema";
 import { eq } from "drizzle-orm";
-import { toBase, calcLineTotal } from "./units";
+import { toBaseQuantity, calcLineTotal } from "./units";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
 import bcrypt from "bcrypt";
@@ -57,7 +57,7 @@ export async function placeOrder({
   if (!product) throw new Error("Product not found");
 
   // Phase 3 logic: Convert to base before calculation
-  const baseQuantity = toBase(orderedQuantity, orderedUnit);
+  const baseQuantity = toBaseQuantity(orderedQuantity, orderedUnit);
   
   // High precision calculation using NUMERIC logic
   // we do the calc in JS but will store as numeric in postgres

@@ -1,28 +1,27 @@
-const CONVERSION_TO_BASE: Record<string, number> = {
-  g: 1, 
-  kg: 1000,
-  mL: 1, 
-  L: 1000,
+export const UNITS_TO_BASE: Record<string, number> = {
+  g: 1, kg: 1000,
+  mL: 1, L: 1000,
   count: 1
 }
 
-export function toBase(qty: number, unit: string): number {
-  const multiplier = CONVERSION_TO_BASE[unit]
-  if (multiplier === undefined) {
-    throw new Error(`Invalid unit: ${unit}`)
-  }
-  return qty * multiplier
+export const SUPPORTED_UNITS_FOR_BASE: Record<string, string[]> = {
+  g: ['g', 'kg'],
+  mL: ['mL', 'L'],
+  count: ['count']
+}
+
+export function toBaseQuantity(quantity: number, unit: string): number {
+  const factor = UNITS_TO_BASE[unit]
+  if (!factor) throw new Error(`Unknown unit: ${unit}`)
+  return quantity * factor
+}
+
+export function fromBaseQuantity(baseQty: number, targetUnit: string): number {
+  const factor = UNITS_TO_BASE[targetUnit]
+  if (!factor) throw new Error(`Unknown unit: ${targetUnit}`)
+  return baseQty / factor
 }
 
 export function calcLineTotal(baseQty: number, pricePerBase: number): number {
   return baseQty * pricePerBase
-}
-
-// Convert from base back to a specific unit (e.g. for display purposes if needed)
-export function fromBase(baseQty: number, targetUnit: string): number {
-  const divider = CONVERSION_TO_BASE[targetUnit]
-  if (divider === undefined) {
-    throw new Error(`Invalid unit: ${targetUnit}`)
-  }
-  return baseQty / divider
 }

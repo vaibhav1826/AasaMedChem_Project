@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { formatINR } from "@/lib/format";
-import { toBase, calcLineTotal } from "@/lib/units";
+import { toBaseQuantity, calcLineTotal } from "@/lib/units";
 import { placeOrder } from "@/lib/actions";
 
 export default function OrderForm({ product }: { product: any }) {
@@ -26,7 +26,7 @@ export default function OrderForm({ product }: { product: any }) {
     if (isNaN(numQty) || numQty <= 0) return null;
 
     try {
-      const baseQty = toBase(numQty, unit);
+      const baseQty = toBaseQuantity(numQty, unit);
       const lineTotal = calcLineTotal(baseQty, parseFloat(product.pricePerBaseUnit));
       return { baseQty, lineTotal };
     } catch (e) {
