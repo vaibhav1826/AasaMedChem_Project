@@ -26,6 +26,7 @@ async function seed() {
 
   const adminPassword = await bcrypt.hash('admin123', 10);
   const sellerPassword = await bcrypt.hash('seller123', 10);
+  const buyerPassword = await bcrypt.hash('buyer123', 10);
 
   console.log('Inserting users...');
   await db.insert(schema.users).values({
@@ -38,6 +39,12 @@ async function seed() {
     email: 'seller@test.com',
     passwordHash: sellerPassword,
     role: 'seller',
+  });
+
+  await db.insert(schema.users).values({
+    email: 'buyer@test.com',
+    passwordHash: buyerPassword,
+    role: 'buyer',
   });
 
   console.log('Inserting products...');

@@ -4,7 +4,7 @@ export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
-  role: text('role', { enum: ['admin', 'seller'] }).notNull().default('seller'),
+  role: text('role', { enum: ['admin', 'seller', 'buyer'] }).notNull().default('seller'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
