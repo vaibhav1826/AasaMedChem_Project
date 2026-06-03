@@ -16,14 +16,14 @@ export const products = pgTable('products', {
   category: text('category'),
   baseUnit: text('base_unit', { enum: ['g', 'mL', 'count'] }).notNull(),
   pricePerBaseUnit: numeric('price_per_base_unit', { precision: 15, scale: 4 }).notNull(),
-  stock: numeric('stock', { precision: 15, scale: 6 }).notNull().default('0'),
+  stockQuantity: numeric('stock_quantity', { precision: 15, scale: 6 }).notNull().default('0'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export const orders = pgTable('orders', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').references(() => users.id).notNull(),
-  status: text('status', { enum: ['pending', 'completed', 'cancelled'] }).notNull().default('pending'),
+  status: text('status', { enum: ['pending', 'confirmed', 'fulfilled'] }).notNull().default('pending'),
   totalInr: numeric('total_inr', { precision: 15, scale: 4 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
@@ -35,5 +35,6 @@ export const orderItems = pgTable('order_items', {
   orderedQuantity: numeric('ordered_quantity', { precision: 15, scale: 6 }).notNull(),
   orderedUnit: text('ordered_unit').notNull(),
   baseQuantity: numeric('base_quantity', { precision: 15, scale: 6 }).notNull(),
+  pricePerBaseUnitSnapshot: numeric('price_per_base_unit_snapshot', { precision: 15, scale: 4 }).notNull(),
   lineTotalInr: numeric('line_total_inr', { precision: 15, scale: 4 }).notNull(),
 });

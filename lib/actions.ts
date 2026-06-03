@@ -67,7 +67,7 @@ export async function placeOrder({
   const [order] = await db.insert(orders).values({
     userId: session.user.id,
     totalInr: lineTotalInr.toString(),
-    status: 'completed',
+    status: 'pending',
   }).returning();
 
   await db.insert(orderItems).values({
@@ -76,12 +76,13 @@ export async function placeOrder({
     orderedQuantity: orderedQuantity.toString(),
     orderedUnit: orderedUnit,
     baseQuantity: baseQuantity.toString(),
+    pricePerBaseUnitSnapshot: product.pricePerBaseUnit,
     lineTotalInr: lineTotalInr.toString(),
   });
 
   // Deduct stock
-  const newStock = parseFloat(product.stock) - baseQuantity;
-  await db.update(products).set({ stock: newStock.toString() }).where(eq(products.id, product.id));
+  const newStock = parseFloat(product.stockQuantity) - baseQuantity;
+  await db.update(products).set({ stockQuantity: newStock.toString() }).where(eq(products.id, product.id));
 
   return order.id;
 }

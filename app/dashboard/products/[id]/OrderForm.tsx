@@ -44,7 +44,7 @@ export default function OrderForm({ product }: { product: any }) {
       return;
     }
 
-    if (calculation && calculation.baseQty > parseFloat(product.stock)) {
+    if (calculation && calculation.baseQty > parseFloat(product.stockQuantity)) {
       setError("Insufficient stock available.");
       return;
     }

@@ -31,7 +31,7 @@ export default async function AdminProductsPage() {
                 <TableCell className="font-medium">{p.name}</TableCell>
                 <TableCell><Badge variant="outline">{p.category}</Badge></TableCell>
                 <TableCell className="text-right">{formatINR(p.pricePerBaseUnit)} / {p.baseUnit}</TableCell>
-                <TableCell className="text-right">{parseFloat(p.stock)} {p.baseUnit}</TableCell>
+                <TableCell className="text-right">{parseFloat(p.stockQuantity)} {p.baseUnit}</TableCell>
               </TableRow>
             ))}
             {products.length === 0 && (

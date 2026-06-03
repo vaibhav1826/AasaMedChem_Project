@@ -28,46 +28,76 @@ async function seed() {
   const sellerPassword = await bcrypt.hash('seller123', 10);
 
   console.log('Inserting users...');
-  const [admin] = await db.insert(schema.users).values({
+  await db.insert(schema.users).values({
     email: 'admin@test.com',
     passwordHash: adminPassword,
     role: 'admin',
-  }).returning();
+  });
 
-  const [seller] = await db.insert(schema.users).values({
+  await db.insert(schema.users).values({
     email: 'seller@test.com',
     passwordHash: sellerPassword,
     role: 'seller',
-  }).returning();
+  });
 
   console.log('Inserting products...');
   await db.insert(schema.products).values([
+    // Base unit 'g'
     {
-      sku: 'WHEAT-50KG',
-      name: 'Premium Wheat Flour',
-      description: 'High quality whole wheat flour perfect for bakeries.',
-      category: 'Grains',
+      sku: 'NACL-500G',
+      name: 'Sodium Chloride',
+      description: 'High purity NaCl for laboratory use.',
+      category: 'Chemicals',
       baseUnit: 'g',
-      pricePerBaseUnit: '0.0400', // 40 INR per kg => 0.04 INR per g
-      stock: '5000000', // 5000 kg in g
+      pricePerBaseUnit: '0.5000', 
+      stockQuantity: '500000', // 500kg in g
     },
     {
-      sku: 'OLIVE-OIL-10L',
-      name: 'Extra Virgin Olive Oil',
-      description: 'Imported olive oil in bulk packaging.',
-      category: 'Oils',
+      sku: 'C6H12O6-1KG',
+      name: 'D-Glucose Anhydrous',
+      description: 'Reagent grade glucose.',
+      category: 'Chemicals',
+      baseUnit: 'g',
+      pricePerBaseUnit: '1.2000', 
+      stockQuantity: '1000000', // 1000kg in g
+    },
+    // Base unit 'mL'
+    {
+      sku: 'ETOH-99-1L',
+      name: 'Ethanol Absolute 99.9%',
+      description: 'Analytical grade ethanol.',
+      category: 'Solvents',
       baseUnit: 'mL',
-      pricePerBaseUnit: '0.8000', // 800 INR per L => 0.8 INR per mL
-      stock: '200000', // 200 L in mL
+      pricePerBaseUnit: '2.5000', 
+      stockQuantity: '200000', // 200L in mL
     },
     {
-      sku: 'CACAO-10KG',
-      name: 'Raw Cacao Powder',
-      description: 'Organic raw cacao powder.',
-      category: 'Baking',
-      baseUnit: 'g',
-      pricePerBaseUnit: '1.2000', // 1200 INR per kg => 1.2 INR per g
-      stock: '100000', // 100 kg in g
+      sku: 'HCL-37-2.5L',
+      name: 'Hydrochloric Acid 37%',
+      description: 'Concentrated HCl.',
+      category: 'Acids',
+      baseUnit: 'mL',
+      pricePerBaseUnit: '1.8000', 
+      stockQuantity: '500000', // 500L in mL
+    },
+    // Base unit 'count'
+    {
+      sku: 'TIPS-10UL-1000',
+      name: 'Pipette Tips 10µL',
+      description: 'Box of 1000 sterile micro-pipette tips.',
+      category: 'Consumables',
+      baseUnit: 'count',
+      pricePerBaseUnit: '2.0000', // 2 INR per tip
+      stockQuantity: '100000', // 100k tips
+    },
+    {
+      sku: 'TUBE-15ML-50',
+      name: 'Centrifuge Tubes 15mL',
+      description: 'Pack of 50 sterile conical tubes.',
+      category: 'Consumables',
+      baseUnit: 'count',
+      pricePerBaseUnit: '15.0000', // 15 INR per tube
+      stockQuantity: '50000', // 50k tubes
     }
   ]);
 

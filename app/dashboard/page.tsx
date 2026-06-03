@@ -26,7 +26,7 @@ export default async function DashboardPage() {
               <div className="mt-4 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-md">
                 <p className="font-semibold text-lg">{formatINR(p.pricePerBaseUnit)} <span className="text-sm font-normal text-muted-foreground">/ {p.baseUnit}</span></p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  In Stock: {parseFloat(p.stock)} {p.baseUnit}
+                  In Stock: {parseFloat(p.stockQuantity)} {p.baseUnit}
                 </p>
               </div>
             </CardContent>
