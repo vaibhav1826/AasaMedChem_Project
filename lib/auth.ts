@@ -57,7 +57,6 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
-  trustHost: true,
   pages: {
     signIn: "/login",
   },
