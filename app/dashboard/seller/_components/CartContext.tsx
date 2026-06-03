@@ -3,21 +3,25 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { placeOrder } from "../actions";
 import { useRouter } from "next/navigation";
+import { toBaseQuantity, calcLineTotal } from "@/lib/units";
 
 export type CartItem = {
-  id: string; // generated client side just for list key
+  id: string; 
   productId: string;
   productName: string;
+  baseUnit: string;
+  pricePerBaseUnit: number;
+  stockQuantity: number; // for validation
   orderedQuantity: number;
   orderedUnit: string;
   baseQuantity: number;
-  pricePerBaseUnit: number;
   lineTotalInr: number;
 };
 
 type CartContextType = {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "id">) => void;
+  updateItem: (id: string, updates: Partial<CartItem>) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
   isCartOpen: boolean;
@@ -34,9 +38,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // Load from local storage
   useEffect(() => {
-    const saved = localStorage.getItem("b2b-cart");
+    const saved = localStorage.getItem("seller-cart");
     if (saved) {
       try {
         setItems(JSON.parse(saved));
@@ -44,14 +47,37 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Save to local storage
   useEffect(() => {
-    localStorage.setItem("b2b-cart", JSON.stringify(items));
+    localStorage.setItem("seller-cart", JSON.stringify(items));
   }, [items]);
 
   const addItem = (item: Omit<CartItem, "id">) => {
-    setItems((prev) => [...prev, { ...item, id: crypto.randomUUID() }]);
+    // If it already exists, just open the cart
+    const exists = items.find(i => i.productId === item.productId);
+    if (!exists) {
+      setItems((prev) => [...prev, { ...item, id: crypto.randomUUID() }]);
+    }
     setIsCartOpen(true);
+  };
+
+  const updateItem = (id: string, updates: Partial<CartItem>) => {
+    setItems((prev) => prev.map((item) => {
+      if (item.id === id) {
+        const updated = { ...item, ...updates };
+        
+        // Recalculate if qty or unit changes
+        if (updates.orderedQuantity !== undefined || updates.orderedUnit !== undefined) {
+          try {
+            updated.baseQuantity = toBaseQuantity(updated.orderedQuantity, updated.orderedUnit);
+            updated.lineTotalInr = calcLineTotal(updated.baseQuantity, updated.pricePerBaseUnit);
+          } catch (e) {
+            // invalid unit or qty
+          }
+        }
+        return updated;
+      }
+      return item;
+    }));
   };
 
   const removeItem = (id: string) => {
@@ -69,10 +95,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       await placeOrder(items);
       clearCart();
       setIsCartOpen(false);
-      router.push("/dashboard/orders");
-    } catch (error) {
+      router.push("/dashboard/seller/orders");
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to place order.");
+      alert(error.message || "Failed to place order.");
     } finally {
       setIsSubmitting(false);
     }
@@ -83,6 +109,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       value={{
         items,
         addItem,
+        updateItem,
         removeItem,
         clearCart,
         isCartOpen,

@@ -52,7 +52,7 @@ export default async function SellerOrdersPage() {
               return (
                 <TableRow key={order.id} className="border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 cursor-pointer relative group">
                   <TableCell className="font-mono text-sm font-medium">
-                    <Link href={`/dashboard/orders/${order.id}`} className="absolute inset-0" />
+                    <Link href={`/dashboard/seller/orders/${order.id}`} className="absolute inset-0" />
                     {order.id.slice(0, 8)}
                   </TableCell>
                   <TableCell>{new Date(order.createdAt).toLocaleString()}</TableCell>

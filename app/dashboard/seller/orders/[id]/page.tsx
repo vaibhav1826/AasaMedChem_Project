@@ -47,7 +47,7 @@ export default async function SellerOrderDetailPage({ params }: { params: { id: 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/orders" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
+        <Link href="/dashboard/seller/orders" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
           <ArrowLeft className="h-6 w-6" />
         </Link>
         <h1 className="text-3xl font-bold tracking-tight">Order Details</h1>
