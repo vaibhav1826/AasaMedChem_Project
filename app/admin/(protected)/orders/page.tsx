@@ -27,7 +27,7 @@ export default async function AdminOrdersPage() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Global Orders</h1>
 
-      <div className="rounded-md border border-zinc-800 bg-zinc-950/50">
+      <div className="rounded-xl border border-white/10 bg-zinc-900/40 backdrop-blur-xl shadow-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="border-zinc-800 hover:bg-transparent">

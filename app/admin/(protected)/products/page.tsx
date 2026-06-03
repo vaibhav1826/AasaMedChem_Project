@@ -16,7 +16,7 @@ export default async function AdminProductsPage() {
         <ProductForm />
       </div>
 
-      <div className="rounded-md border border-zinc-800 bg-zinc-950/50">
+      <div className="rounded-xl border border-white/10 bg-zinc-900/40 backdrop-blur-xl shadow-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="border-zinc-800 hover:bg-transparent">

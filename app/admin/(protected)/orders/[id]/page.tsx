@@ -82,7 +82,7 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border border-zinc-800 bg-zinc-950/50 mt-6">
+          <div className="rounded-xl border border-white/10 bg-zinc-900/40 backdrop-blur-xl shadow-lg overflow-hidden mt-6">
             <Table>
               <TableHeader>
                 <TableRow className="border-zinc-800 hover:bg-transparent">
