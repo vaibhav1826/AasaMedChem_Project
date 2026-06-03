@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Package, Settings, LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { CartSheet } from "@/app/dashboard/_components/CartSheet";
 
 export function BuyerHeader() {
   const { data: session } = useSession();
@@ -43,10 +44,11 @@ export function BuyerHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex flex-col items-end">
+          <div className="hidden sm:flex flex-col items-end mr-2">
             <span className="text-sm font-medium">{session?.user?.email}</span>
             <span className="text-xs text-muted-foreground uppercase tracking-wider">{session?.user?.role}</span>
           </div>
+          <CartSheet />
           <Button variant="ghost" size="icon" onClick={() => signOut()} title="Sign out" className="text-zinc-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30">
             <LogOut className="h-5 w-5" />
           </Button>

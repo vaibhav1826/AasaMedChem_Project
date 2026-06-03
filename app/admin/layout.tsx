@@ -1,31 +1,26 @@
-"use client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { AdminSidebar } from "./_components/AdminSidebar";
 
-import { motion } from "framer-motion";
-import { usePathname } from "next/navigation";
-import { AdminHeader } from "@/components/layout/AdminHeader";
-import { AdminFooter } from "@/components/layout/AdminFooter";
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const session = await getServerSession(authOptions);
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  if (!session || session.user?.role !== "admin") {
+    redirect("/login");
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-950 text-zinc-50 font-sans">
-      <AdminHeader />
+    <div className="min-h-screen flex bg-zinc-950 text-zinc-50 font-sans">
+      <AdminSidebar email={session.user?.email || ""} />
       
-      <main className="flex-1 relative z-0">
-        <motion.div 
-          key={pathname}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-          className="container mx-auto px-6 py-8"
-        >
-          {children}
-        </motion.div>
+      <main className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 overflow-auto">
+          <div className="container mx-auto p-8">
+            {children}
+          </div>
+        </div>
       </main>
-
-      <AdminFooter />
     </div>
   );
 }
