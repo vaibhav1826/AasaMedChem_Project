@@ -1,68 +1,67 @@
-import { withAuth } from "next-auth/middleware";
+import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token;
-    const isAuth = !!token;
-    const path = req.nextUrl.pathname;
+export async function middleware(req: NextRequest) {
+  const token = await getToken({ 
+    req, 
+    secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development-32-chars-long",
+  });
 
-    const isLoginPage = path === "/login";
-    const isAdminLoginPage = path === "/admin/login";
-    const isAuthPage = isLoginPage || isAdminLoginPage;
-    
-    const isAdminRoute = path.startsWith("/admin") && !isAdminLoginPage;
-    const isSellerRoute = path.startsWith("/dashboard/seller");
-    const isBuyerRoute = path.startsWith("/dashboard/buyer");
-    const isRootRoute = path === "/";
+  const isAuth = !!token;
+  const path = req.nextUrl.pathname;
 
-    // Handle root route
-    if (isRootRoute) {
-      if (!isAuth) {
-        return NextResponse.redirect(new URL("/login", req.url));
-      }
-      if (token.role === "admin") return NextResponse.redirect(new URL("/admin", req.url));
-      if (token.role === "seller") return NextResponse.redirect(new URL("/dashboard/seller", req.url));
-      if (token.role === "buyer") return NextResponse.redirect(new URL("/dashboard/buyer", req.url));
-    }
+  const isLoginPage = path === "/login";
+  const isAdminLoginPage = path === "/admin/login";
+  const isAuthPage = isLoginPage || isAdminLoginPage;
+  
+  const isAdminRoute = path.startsWith("/admin") && !isAdminLoginPage;
+  const isSellerRoute = path.startsWith("/dashboard/seller");
+  const isBuyerRoute = path.startsWith("/dashboard/buyer");
+  const isRootRoute = path === "/";
 
-    // If user is already authenticated and tries to visit auth pages
-    if (isAuthPage && isAuth) {
-      if (token.role === "admin") return NextResponse.redirect(new URL("/admin", req.url));
-      if (token.role === "seller") return NextResponse.redirect(new URL("/dashboard/seller", req.url));
-      if (token.role === "buyer") return NextResponse.redirect(new URL("/dashboard/buyer", req.url));
-    }
-
-    // Protection logic
+  // Handle root route
+  if (isRootRoute) {
     if (!isAuth) {
-      if (isAdminRoute) {
-        return NextResponse.redirect(new URL("/admin/login", req.url));
-      }
-      if (isSellerRoute || isBuyerRoute) {
-        return NextResponse.redirect(new URL("/login", req.url));
-      }
+      return NextResponse.redirect(new URL("/login", req.url));
     }
+    if (token.role === "admin") return NextResponse.redirect(new URL("/admin", req.url));
+    if (token.role === "seller") return NextResponse.redirect(new URL("/dashboard/seller", req.url));
+    if (token.role === "buyer") return NextResponse.redirect(new URL("/dashboard/buyer", req.url));
+  }
 
-    // Role verification
-    if (isAdminRoute && token?.role !== "admin") {
+  // If user is already authenticated and tries to visit auth pages
+  if (isAuthPage && isAuth) {
+    if (token.role === "admin") return NextResponse.redirect(new URL("/admin", req.url));
+    if (token.role === "seller") return NextResponse.redirect(new URL("/dashboard/seller", req.url));
+    if (token.role === "buyer") return NextResponse.redirect(new URL("/dashboard/buyer", req.url));
+  }
+
+  // Protection logic
+  if (!isAuth) {
+    if (isAdminRoute) {
       return NextResponse.redirect(new URL("/admin/login", req.url));
     }
-    
-    if (isSellerRoute && token?.role !== "seller") {
+    if (isSellerRoute || isBuyerRoute) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
-    
-    if (isBuyerRoute && token?.role !== "buyer") {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => true,
-    },
-    secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
   }
-);
+
+  // Role verification
+  if (isAdminRoute && token?.role !== "admin") {
+    return NextResponse.redirect(new URL("/admin/login", req.url));
+  }
+  
+  if (isSellerRoute && token?.role !== "seller") {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+  
+  if (isBuyerRoute && token?.role !== "buyer") {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [

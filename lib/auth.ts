@@ -57,8 +57,9 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  trustHost: true,
   pages: {
     signIn: "/login",
   },
-  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development-32-chars-long",
 };
