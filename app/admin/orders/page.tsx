@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { orders, users } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { orders, users, orderItems } from "@/lib/db/schema";
+import { eq, desc, sql } from "drizzle-orm";
 import { formatINR } from "@/lib/format";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -14,9 +14,13 @@ export default async function AdminOrdersPage() {
       status: orders.status,
       totalInr: orders.totalInr,
       sellerEmail: users.email,
+      buyerRole: users.role,
+      itemCount: sql<number>`count(${orderItems.id})`,
     })
     .from(orders)
     .leftJoin(users, eq(orders.userId, users.id))
+    .leftJoin(orderItems, eq(orders.id, orderItems.orderId))
+    .groupBy(orders.id, users.id)
     .orderBy(desc(orders.createdAt));
 
   return (
@@ -28,8 +32,10 @@ export default async function AdminOrdersPage() {
           <TableHeader>
             <TableRow className="border-zinc-800 hover:bg-transparent">
               <TableHead className="text-zinc-400">Order ID</TableHead>
-              <TableHead className="text-zinc-400">Seller Email</TableHead>
+              <TableHead className="text-zinc-400">Role</TableHead>
+              <TableHead className="text-zinc-400">Email</TableHead>
               <TableHead className="text-zinc-400">Date</TableHead>
+              <TableHead className="text-zinc-400">Items</TableHead>
               <TableHead className="text-zinc-400">Status</TableHead>
               <TableHead className="text-right text-zinc-400">Total INR</TableHead>
             </TableRow>
@@ -46,8 +52,14 @@ export default async function AdminOrdersPage() {
                     <Link href={`/admin/orders/${order.id}`} className="absolute inset-0" />
                     {order.id.slice(0, 8)}
                   </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="border-zinc-700 uppercase text-[10px]">
+                      {order.buyerRole}
+                    </Badge>
+                  </TableCell>
                   <TableCell>{order.sellerEmail}</TableCell>
                   <TableCell>{new Date(order.createdAt).toLocaleString()}</TableCell>
+                  <TableCell>{Number(order.itemCount)}</TableCell>
                   <TableCell>
                     <Badge className={badgeColor}>{order.status.toUpperCase()}</Badge>
                   </TableCell>
@@ -59,7 +71,7 @@ export default async function AdminOrdersPage() {
             })}
             {allOrders.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center h-24 text-zinc-500">
+                <TableCell colSpan={7} className="text-center h-24 text-zinc-500">
                   No orders found.
                 </TableCell>
               </TableRow>

@@ -18,6 +18,7 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
       status: orders.status,
       totalInr: orders.totalInr,
       sellerEmail: users.email,
+      buyerRole: users.role,
     })
     .from(orders)
     .leftJoin(users, eq(orders.userId, users.id))
@@ -61,7 +62,11 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
           <div>
             <CardTitle className="text-xl">Order #{order.id}</CardTitle>
             <CardDescription className="text-zinc-400 mt-2">
-              Placed by <span className="text-white font-medium">{order.sellerEmail}</span> on {new Date(order.createdAt).toLocaleString()}
+              Placed by <span className="text-white font-medium">{order.sellerEmail}</span> 
+              <Badge variant="outline" className="mx-2 bg-zinc-800 text-zinc-300 border-zinc-700 uppercase text-[10px]">
+                {order.buyerRole}
+              </Badge>
+              on {new Date(order.createdAt).toLocaleString()}
             </CardDescription>
           </div>
           <div className="flex flex-col items-end gap-3">

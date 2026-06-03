@@ -3,22 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { ShieldCheck, LayoutDashboard, Package, ShoppingCart, LogOut } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, Package, ShoppingCart, LogOut, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function AdminSidebar({ email }: { email: string }) {
   const pathname = usePathname();
 
   const links = [
-    { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/products", label: "Products", icon: Package },
-    { href: "/admin/orders", label: "Global Orders", icon: ShoppingCart },
+    { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+    { href: "/admin/users", label: "Users", icon: Users },
   ];
 
   return (
     <div className="w-64 border-r border-zinc-800 bg-zinc-950 flex flex-col hidden md:flex h-screen sticky top-0">
       <div className="h-16 flex items-center px-6 border-b border-zinc-800 shrink-0">
-        <Link href="/admin/dashboard" className="text-xl font-extrabold tracking-tighter flex items-center gap-2">
+        <Link href="/admin" className="text-xl font-extrabold tracking-tighter flex items-center gap-2">
           <ShieldCheck className="h-6 w-6 text-emerald-500" />
           <span>AasaMedChem <span className="text-emerald-500">Admin</span></span>
         </Link>
@@ -26,7 +27,7 @@ export function AdminSidebar({ email }: { email: string }) {
 
       <div className="flex-1 overflow-auto py-6 px-4 space-y-1">
         {links.map((link) => {
-          const isActive = pathname.startsWith(link.href);
+          const isActive = pathname === link.href || (link.href !== "/admin" && pathname.startsWith(link.href));
           const Icon = link.icon;
           return (
             <Link
