@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ShoppingCart, Trash2, ArrowRight } from "lucide-react";
 import { useCart, CartItem } from "./CartContext";
 import { formatINR } from "@/lib/format";
-import { SUPPORTED_UNITS_FOR_BASE } from "@/lib/units";
+import { UNITS_FOR_BASE_UNIT } from "@/lib/units";
 
 export function CartDrawer() {
   const { items, removeItem, updateItem, isCartOpen, setIsCartOpen, submitOrder, isSubmitting } = useCart();
@@ -75,7 +75,7 @@ function CartItemRow({
   updateItem: (id: string, updates: Partial<CartItem>) => void; 
   removeItem: (id: string) => void;
 }) {
-  const allowedUnits = SUPPORTED_UNITS_FOR_BASE[item.baseUnit] || [item.baseUnit];
+  const allowedUnits = UNITS_FOR_BASE_UNIT[item.baseUnit] || [item.baseUnit];
 
   return (
     <div className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 space-y-3">

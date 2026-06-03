@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -111,6 +112,12 @@ export default function LoginPage() {
             <div>buyer@test.com</div>
             <div>buyer123</div>
           </div>
+        </div>
+
+        <div className="text-center">
+          <Link href="/admin/login" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 font-medium transition-colors">
+            Admin? Login here
+          </Link>
         </div>
       </div>
     </div>
