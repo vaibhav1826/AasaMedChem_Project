@@ -18,11 +18,11 @@ const db = drizzle(sql, { schema });
 async function seed() {
   console.log('Seeding database...');
   
-  // Clear existing data (optional but useful for a fresh seed)
-  await db.delete(schema.orderItems);
-  await db.delete(schema.orders);
-  await db.delete(schema.products);
-  await db.delete(schema.users);
+  const existingUsers = await db.select().from(schema.users).limit(1);
+  if (existingUsers.length > 0) {
+    console.log('Database already contains users. Skipping seed to prevent overwriting.');
+    return;
+  }
 
   const adminPassword = await bcrypt.hash('admin123', 10);
   const sellerPassword = await bcrypt.hash('seller123', 10);
