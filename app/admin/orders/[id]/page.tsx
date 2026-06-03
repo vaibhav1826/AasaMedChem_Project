@@ -6,9 +6,10 @@ import { notFound } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { UpdateStatusButton } from "../_components/UpdateStatusButton";
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { UpdateStatusButton } from "../_components/UpdateStatusButton";
+import { AdminPricingForm } from "../_components/AdminPricingForm";
+import Link from "next/link";
 
 export default async function AdminOrderDetailPage({ params }: { params: { id: string } }) {
   const [order] = await db
@@ -100,10 +101,14 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
                       {parseFloat(item.baseQuantity || "0")} {item.baseUnit}
                     </TableCell>
                     <TableCell className="text-right text-zinc-400">
-                      {formatINR(item.pricePerBaseUnitSnapshot)} / {item.baseUnit}
+                      {order.buyerRole === "buyer" && order.status === "pending" 
+                        ? "TBD" 
+                        : `${formatINR(item.pricePerBaseUnitSnapshot)} / ${item.baseUnit}`}
                     </TableCell>
                     <TableCell className="text-right font-bold text-white">
-                      {formatINR(item.lineTotalInr)}
+                      {order.buyerRole === "buyer" && order.status === "pending"
+                        ? "TBD"
+                        : formatINR(item.lineTotalInr)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -112,11 +117,17 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
           </div>
           <div className="mt-6 flex justify-end">
             <div className="text-xl font-bold bg-zinc-800/50 px-6 py-4 rounded-lg border border-zinc-800">
-              Total: <span className="text-emerald-500">{formatINR(order.totalInr)}</span>
+              Total: <span className="text-emerald-500">
+                {order.buyerRole === "buyer" && order.status === "pending" ? "TBD" : formatINR(order.totalInr)}
+              </span>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {order.buyerRole === "buyer" && order.status === "pending" && (
+        <AdminPricingForm orderId={order.id} items={items} />
+      )}
     </div>
   );
 }

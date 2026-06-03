@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { ProductCard } from "./ProductCard";
+import { ProductCard as SellerProductCard } from "./ProductCard";
+import { BuyerProductCard } from "@/app/dashboard/buyer/_components/BuyerProductCard";
 
-export function ProductGrid({ initialProducts }: { initialProducts: any[] }) {
+export function ProductGrid({ initialProducts, role = "seller" }: { initialProducts: any[], role?: "seller" | "buyer" }) {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
 
@@ -50,7 +51,9 @@ export function ProductGrid({ initialProducts }: { initialProducts: any[] }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filtered.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          role === "seller" 
+            ? <SellerProductCard key={p.id} product={p} />
+            : <BuyerProductCard key={p.id} product={p} />
         ))}
       </div>
 
