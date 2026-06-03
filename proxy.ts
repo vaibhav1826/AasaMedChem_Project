@@ -60,6 +60,7 @@ export default withAuth(
     callbacks: {
       authorized: ({ token }) => true,
     },
+    secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
   }
 );
 
